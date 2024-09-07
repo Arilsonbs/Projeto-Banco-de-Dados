@@ -1,0 +1,34 @@
+CREATE TABLE Clientes (
+    id_cliente SERIAL PRIMARY KEY,
+    nome VARCHAR(100),
+    email VARCHAR(100),
+    telefone VARCHAR(20),
+    endereco TEXT,
+    data_criacao DATE
+);
+
+CREATE TABLE Assinaturas (
+    id_assinatura SERIAL PRIMARY KEY,
+    id_cliente INT REFERENCES Clientes(id_cliente),
+    plano VARCHAR(50),
+    data_inicio DATE,
+    data_fim DATE,
+    status VARCHAR(20)
+);
+
+CREATE TABLE Atendimentos_Tecnicos (
+    id_atendimento SERIAL PRIMARY KEY,
+    id_cliente INT REFERENCES Clientes(id_cliente),
+    data_atendimento DATE,
+    descricao TEXT,
+    tecnico_responsavel VARCHAR(100),
+    status_atendimento VARCHAR(20)
+);
+
+CREATE TABLE Cobrancas (
+    id_cobranca SERIAL PRIMARY KEY,
+    id_cliente INT REFERENCES Clientes(id_cliente),
+    data_cobranca DATE,
+    valor DECIMAL(10, 2),
+    status_pagamento VARCHAR(20)
+);

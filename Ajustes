@@ -1,0 +1,83 @@
+-- Clientes 
+
+CREATE TABLE Clientes (
+    id_cliente BIGSERIAL PRIMARY KEY,
+    nome VARCHAR(100),
+    email VARCHAR(100) UNIQUE,
+    telefone VARCHAR(20),
+    endereco TEXT,
+    data_criacao DATE,
+    CONSTRAINT chk_email CHECK (email LIKE '%_@__%.__%')
+);
+
+-- Criar índice em campos de busca frequente
+CREATE INDEX idx_email ON Clientes (email);
+CREATE INDEX idx_telefone ON Clientes (telefone);
+
+-- Assinaturas
+
+CREATE TABLE Status_Assinatura (
+    id_status SERIAL PRIMARY KEY,
+    descricao VARCHAR(50)
+);
+
+CREATE TABLE Assinaturas (
+    id_assinatura BIGSERIAL PRIMARY KEY,
+    id_cliente BIGINT REFERENCES Clientes(id_cliente),
+    plano VARCHAR(50),
+    data_inicio DATE,
+    data_fim DATE,
+    id_status INT REFERENCES Status_Assinatura(id_status),
+    -- Índices para planos ativos e dados comuns
+    CONSTRAINT fk_status CHECK (id_status IN (1, 2, 3)) -- Exemplo de status (1 = ativo, 2 = cancelado)
+);
+
+-- Índices Assinatura
+CREATE INDEX idx_cliente_assinatura ON Assinaturas(id_cliente);
+CREATE INDEX idx_plano ON Assinaturas(plano);
+
+--Atendimentos Técnicos
+
+CREATE TABLE Atendimentos_Tecnicos (
+    id_atendimento BIGSERIAL PRIMARY KEY,
+    id_cliente BIGINT REFERENCES Clientes(id_cliente),
+    data_atendimento DATE,
+    descricao TEXT,
+    tecnico_responsavel VARCHAR(100),
+    status_atendimento VARCHAR(20)
+);
+
+-- Índice por cliente e data
+CREATE INDEX idx_cliente_data ON Atendimentos_Tecnicos (id_cliente, data_atendimento);
+
+--Cobranças
+
+CREATE TABLE Cobrancas (
+    id_cobranca BIGSERIAL PRIMARY KEY,
+    id_cliente BIGINT REFERENCES Clientes(id_cliente),
+    data_cobranca DATE,
+    valor DECIMAL(10, 2),
+    status_pagamento VARCHAR(20)
+);
+
+-- Índices
+CREATE INDEX idx_cobranca_cliente ON Cobrancas (id_cliente, data_cobranca);
+
+--Exemplo de Consultas Otimizadas
+
+--Consultar cobranças pendentes:
+
+SELECT C.id_cliente, C.valor, C.data_cobranca
+FROM Cobrancas C
+JOIN Clientes CL ON C.id_cliente = CL.id_cliente
+WHERE C.status_pagamento = 'pendente'
+ORDER BY C.data_cobranca DESC
+LIMIT 50;
+
+--Consultar atendimentos técnicos recentes de um cliente:
+
+SELECT AT.data_atendimento, AT.descricao, AT.tecnico_responsavel
+FROM Atendimentos_Tecnicos AT
+WHERE AT.id_cliente = 12345
+ORDER BY AT.data_atendimento DESC
+LIMIT 10;
